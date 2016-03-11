@@ -178,6 +178,7 @@ module Delayed
               say 'No more jobs available. Exiting'
               break
             elsif !stop?
+              say "Worker is sleeping for #{self.class.sleep_delay}"
               sleep(self.class.sleep_delay)
               reload!
             end
@@ -297,8 +298,15 @@ module Delayed
     # Run the next job we can get an exclusive lock on.
     # If no jobs are left we return nil
     def reserve_and_run_one_job
+      s = Time.now
       job = reserve_job
-      self.class.lifecycle.run_callbacks(:perform, self, job) { run(job) } if job
+      x = nil
+      if job
+        x = self.class.lifecycle.run_callbacks(:perform, self, job) { run(job) }
+      end
+      e = Time.now
+      say "reserve and run time: #{e-s}"
+      return x
     end
 
     def reserve_job
