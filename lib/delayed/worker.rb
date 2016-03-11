@@ -303,6 +303,8 @@ module Delayed
       x = nil
       if job
         x = self.class.lifecycle.run_callbacks(:perform, self, job) { run(job) }
+      else
+        say "No job found!"
       end
       e = Time.now
       say "reserve and run time: #{e-s}"
